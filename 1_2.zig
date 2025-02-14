@@ -8,15 +8,13 @@ fn twoSum(nums: []const u8, target: u8) ![2]usize {
     var temp = std.AutoHashMap(u8, usize).init(allocator);
     defer temp.deinit();
 
-    for (nums, 0..) |n, i| {
-        try temp.put(n, i);
-    }
     var j: ?usize = null;
     for (nums, 0..) |n, i| {
         j = temp.get(target - n);
-        if (j != null and j != i) {
-            return [2]usize{ i, j.? };
+        if (j != null) {
+            return [2]usize{ j.?, i };
         }
+        try temp.put(n, i);
     }
 
     return [2]usize{ 0, 0 };
