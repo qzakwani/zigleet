@@ -71,7 +71,7 @@ fn addTwoNumbers(allocator: *const std.mem.Allocator, l1: *const ListNode, l2: *
 
     var res: u128 = n1 + n2;
 
-    const _allocator = std.heap.page_allocator;
+    const _allocator: std.mem.Allocator = allocator.*;
     var list = std.ArrayList(u128).init(_allocator);
     defer list.deinit();
 
@@ -85,15 +85,60 @@ fn addTwoNumbers(allocator: *const std.mem.Allocator, l1: *const ListNode, l2: *
     return try ListNode.from(allocator, list.items);
 }
 
-pub fn main() !void {
+test "ex 1" {
     var allocator = std.heap.page_allocator;
     const l1 = try ListNode.from(&allocator, &.{ 2, 4, 3 });
     defer ListNode.free(&allocator, l1);
     const l2 = try ListNode.from(&allocator, &.{ 5, 6, 4 });
     defer ListNode.free(&allocator, l2);
+    const expected = try ListNode.from(&allocator, &.{ 7, 0, 8 });
+    defer ListNode.free(&allocator, expected);
 
     const res = try addTwoNumbers(&allocator, l1, l2);
+    defer ListNode.free(&allocator, res);
+    // var r: ?*const ListNode = res;
+    // while (r) |node| {
+    //     try eq(node.Val, expected.Val);
+    //     r = node.Next;
+    // }
+    try eq(res.Val, expected.Val);
+    try eq(res.Next.?.Val, expected.Next.?.Val);
+    try eq(res.Next.?.Next.?.Val, expected.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next, null);
+}
 
-    print("{}, {}, {}\n", .{ res.Val, res.Next.?.Val, res.Next.?.Next.?.Val });
-    _ = &l1;
+test "ex 2" {
+    var allocator = std.heap.page_allocator;
+    const l1 = try ListNode.from(&allocator, &.{0});
+    defer ListNode.free(&allocator, l1);
+    const l2 = try ListNode.from(&allocator, &.{0});
+    defer ListNode.free(&allocator, l2);
+    const expected = try ListNode.from(&allocator, &.{0});
+    defer ListNode.free(&allocator, expected);
+
+    const res = try addTwoNumbers(&allocator, l1, l2);
+    defer ListNode.free(&allocator, res);
+    try eq(res.Val, expected.Val);
+    try eq(res.Next, null);
+}
+test "ex 3" {
+    var allocator = std.heap.page_allocator;
+    const l1 = try ListNode.from(&allocator, &.{ 9, 9, 9, 9, 9, 9, 9 });
+    defer ListNode.free(&allocator, l1);
+    const l2 = try ListNode.from(&allocator, &.{ 9, 9, 9, 9 });
+    defer ListNode.free(&allocator, l2);
+    const expected = try ListNode.from(&allocator, &.{ 8, 9, 9, 9, 0, 0, 0, 1 });
+    defer ListNode.free(&allocator, expected);
+
+    const res = try addTwoNumbers(&allocator, l1, l2);
+    defer ListNode.free(&allocator, res);
+    try eq(res.Val, expected.Val);
+    try eq(res.Next.?.Val, expected.Next.?.Val);
+    try eq(res.Next.?.Next.?.Val, expected.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Val, expected.Next.?.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Next.?.Val, expected.Next.?.Next.?.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Next.?.Next.?.Val, expected.Next.?.Next.?.Next.?.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Val, expected.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Val, expected.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Val);
+    try eq(res.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Next.?.Next, null);
 }
